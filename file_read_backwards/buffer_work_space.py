@@ -6,6 +6,8 @@
 import os
 
 new_lines = ["\r\n", "\n", "\r"]
+new_lines_bytes = [n.encode("ascii") for n in new_lines]  # we only support encodings that's backward compat with ascii
+ascii_new_lines_bytes = [n.encode("ascii") for n in new_lines]  # we only support encodings that's backward compat with ascii
 
 
 class BufferWorkSpace:
@@ -66,7 +68,7 @@ class BufferWorkSpace:
         i = _find_furthest_new_line(t, self.new_lines_bytes)
 
         if i >= 0:
-            delimiter = i + 1
+            delimiter = i + _find_furthest_newline_len(t, self.new_lines_bytes)
             after_new_line = slice(delimiter, None)
             up_to_include_new_line = slice(0, delimiter)
             r = t[after_new_line]
@@ -94,7 +96,7 @@ def _get_file_size(fp):
     return os.fstat(fp.fileno()).st_size
 
 
-def _get_next_chunk(fp, previously_read_position, chunk_size, new_lines_bytes):
+def _get_next_chunk(fp, previously_read_position, chunk_size, new_lines_bytes=ascii_new_lines_bytes):
     """Return next chunk of data that we would from the file pointer.
 
     Args:
@@ -113,7 +115,7 @@ def _get_next_chunk(fp, previously_read_position, chunk_size, new_lines_bytes):
     return read_content, read_position
 
 
-def _get_what_to_read_next(fp, previously_read_position, chunk_size, new_lines_bytes):
+def _get_what_to_read_next(fp, previously_read_position, chunk_size, new_lines_bytes=ascii_new_lines_bytes):
     """Return information on which file pointer position to read from and how many bytes.
 
     Args:
@@ -141,7 +143,7 @@ def _get_what_to_read_next(fp, previously_read_position, chunk_size, new_lines_b
     return seek_position, read_size
 
 
-def _remove_trailing_new_line(line, new_lines_bytes):
+def _remove_trailing_new_line(line, new_lines_bytes=ascii_new_lines_bytes):
     """Remove a single instance of new line at the end of line if it exists.
 
     Returns:
@@ -155,7 +157,7 @@ def _remove_trailing_new_line(line, new_lines_bytes):
     return line
 
 
-def _find_furthest_new_line(read_buffer, new_lines_bytes):
+def _find_furthest_new_line(read_buffer, new_lines_bytes=ascii_new_lines_bytes):
     """Return -1 if read_buffer does not contain new line otherwise the position of the rightmost newline.
 
     Args:
@@ -165,11 +167,30 @@ def _find_furthest_new_line(read_buffer, new_lines_bytes):
     Returns:
         int: The right most position of new line character in read_buffer if found, else -1
     """
+
     new_line_positions = [read_buffer.rfind(n) for n in new_lines_bytes]
     return max(new_line_positions)
 
+def _find_furthest_newline_len(read_buffer, new_lines_bytes=ascii_new_lines_bytes):
+    """Return -1 if read_buffer does not contain new line otherwise the position of the rightmost newline.
 
-def _is_partially_read_new_line(b, new_lines_bytes):
+    Args:
+        read_buffer (bytestring)
+        new_lines_bytes: list of newline byte sequences for the current encoding
+
+    Returns:
+        int: The right most position of new line character in read_buffer if found, else -1
+    TODO: 
+        1. merge to _find_furthest_new_line 
+        2. using nametuple
+        3. update testcase
+    """
+
+    new_line_positions = [(read_buffer.rfind(n), len(n)) for n in new_lines_bytes]
+    return max(new_line_positions, key=lambda x: x[0])[1]
+
+
+def _is_partially_read_new_line(b, new_lines_bytes=ascii_new_lines_bytes):
     """Return True when b is part of a new line separator found at index >= 1, False otherwise.
 
     Args:

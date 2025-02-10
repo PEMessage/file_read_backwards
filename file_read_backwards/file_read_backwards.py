@@ -8,7 +8,8 @@ import os
 
 from .buffer_work_space import BufferWorkSpace
 
-supported_encodings = ["utf-8", "ascii", "latin-1", "utf-16le"]  # any encodings that are backward compatible with ascii should work
+supported_encodings = ["utf-8", "ascii", "latin-1"]  # any encodings that are backward compatible with ascii should work
+ext_supported_encodings = ["utf-16", 'utf-16le', 'utf-16be']  # any encodings that are backward compatible with ascii should work
 
 
 class FileReadBackwards:
@@ -30,9 +31,9 @@ class FileReadBackwards:
             encoding (str): Encoding
             chunk_size (int): How many bytes to read at a time
         """
-        if encoding.lower() not in supported_encodings:
+        if encoding.lower() not in supported_encodings + ext_supported_encodings:
             error_message = "{0} encoding was not supported/tested.".format(encoding)
-            error_message += "Supported encodings are '{0}'".format(",".join(supported_encodings))
+            error_message += "Supported encodings are '{0}'".format(",".join(supported_encodings + ext_supported_encodings))
             raise NotImplementedError(error_message)
 
         self.path = path
