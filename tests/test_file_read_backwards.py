@@ -82,7 +82,7 @@ class TestFileReadBackwards(unittest.TestCase):
         """Test a file with a single new line character."""
         for encoding, new_line in itertools.product(supported_encodings, new_lines):
             temp_file = helper_create_temp_file((line for line in [new_line]), encoding=encoding)
-            f = FileReadBackwards(temp_file.name)
+            f = FileReadBackwards(temp_file.name, encoding=encoding)
             expected_lines = deque([""])
             lines_read = deque()
             for line in f:
@@ -109,7 +109,7 @@ class TestFileReadBackwards(unittest.TestCase):
         """Test a file with just one line of text followed by a new line."""
         for encoding, new_line in itertools.product(supported_encodings, new_lines):
             temp_file = helper_create_temp_file((line for line in ["something{0}".format(new_line)]), encoding=encoding)
-            f = FileReadBackwards(temp_file.name)
+            f = FileReadBackwards(temp_file.name, encoding=encoding)
             expected_lines = deque(["something"])
             lines_read = deque()
             for line in f:

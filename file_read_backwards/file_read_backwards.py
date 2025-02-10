@@ -8,7 +8,7 @@ import os
 
 from .buffer_work_space import BufferWorkSpace
 
-supported_encodings = ["utf-8", "ascii", "latin-1"]  # any encodings that are backward compatible with ascii should work
+supported_encodings = ["utf-8", "ascii", "latin-1", "utf-16le"]  # any encodings that are backward compatible with ascii should work
 
 
 class FileReadBackwards:
@@ -83,7 +83,7 @@ class FileReadBackwardsIterator:
         self.encoding = encoding
         self.chunk_size = chunk_size
         self.__fp = fp
-        self.__buf = BufferWorkSpace(self.__fp, self.chunk_size)
+        self.__buf = BufferWorkSpace(self.__fp, self.chunk_size, encoding=encoding)
 
     def __iter__(self):
         return self
